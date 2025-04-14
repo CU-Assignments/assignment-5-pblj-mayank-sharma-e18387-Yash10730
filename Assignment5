@@ -1,0 +1,166 @@
+// Easy Level: Sum of Integers using Autoboxing & Unboxing
+import java.util.*;
+
+public class SumOfIntegers {
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+        System.out.print("Enter numbers separated by spaces: ");
+        String input = scanner.nextLine();
+        String[] numbers = input.split(" ");
+
+        ArrayList<Integer> list = new ArrayList<>();
+        int sum = 0;
+
+        for (String num : numbers) {
+            Integer number = Integer.parseInt(num); // Autoboxing
+            list.add(number);
+            sum += number; // Unboxing
+        }
+
+        System.out.println("Sum of numbers: " + sum);
+    }
+}
+
+// Medium Level: Student Object Serialization & Deserialization
+import java.io.*;
+
+class Student implements Serializable {
+    int id;
+    String name;
+    double gpa;
+
+    public Student(int id, String name, double gpa) {
+        this.id = id;
+        this.name = name;
+        this.gpa = gpa;
+    }
+}
+
+class StudentSerializationDemo {
+    public static void main(String[] args) {
+        Student student = new Student(101, "John Doe", 3.8);
+
+        // Serialization
+        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream("student.ser"))) {
+            oos.writeObject(student);
+            System.out.println("Student details saved successfully!\n");
+        } catch (IOException e) {
+            System.out.println("Error during serialization: " + e.getMessage());
+        }
+
+        // Deserialization
+        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream("student.ser"))) {
+            Student s = (Student) ois.readObject();
+            System.out.println("Reading from file...");
+            System.out.println("Student ID: " + s.id);
+            System.out.println("Student Name: " + s.name);
+            System.out.println("Student GPA: " + s.gpa);
+        } catch (FileNotFoundException e) {
+            System.out.println("File not found: " + e.getMessage());
+        } catch (IOException | ClassNotFoundException e) {
+            System.out.println("Error during deserialization: " + e.getMessage());
+        }
+    }
+}
+
+// Hard Level: Employee Management System
+import java.io.*;
+import java.util.*;
+
+class Employee implements Serializable {
+    int id;
+    String name;
+    String designation;
+    double salary;
+
+    public Employee(int id, String name, String designation, double salary) {
+        this.id = id;
+        this.name = name;
+        this.designation = designation;
+        this.salary = salary;
+    }
+
+    @Override
+    public String toString() {
+        return "Employee ID: " + id + ", Name: " + name + ", Designation: " + designation + ", Salary: " + salary;
+    }
+}
+
+class EmployeeManagementSystem {
+    private static final String FILE_NAME = "employees.dat";
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        while (true) {
+            System.out.println("\nMenu:");
+            System.out.println("1. Add an Employee");
+            System.out.println("2. Display All Employees");
+            System.out.println("3. Exit");
+            System.out.print("Choose an option: ");
+            int choice = sc.nextInt();
+            sc.nextLine(); // consume newline
+
+            switch (choice) {
+                case 1:
+                    addEmployee(sc);
+                    break;
+                case 2:
+                    displayEmployees();
+                    break;
+                case 3:
+                    System.out.println("Exiting...");
+                    return;
+                default:
+                    System.out.println("Invalid option. Try again.");
+            }
+        }
+    }
+
+    private static void addEmployee(Scanner sc) {
+        try {
+            System.out.print("Enter Employee ID: ");
+            int id = sc.nextInt();
+            sc.nextLine();
+            System.out.print("Enter Employee Name: ");
+            String name = sc.nextLine();
+            System.out.print("Enter Designation: ");
+            String designation = sc.nextLine();
+            System.out.print("Enter Salary: ");
+            double salary = sc.nextDouble();
+
+            Employee emp = new Employee(id, name, designation, salary);
+
+            try (ObjectOutputStream oos = new AppendableObjectOutputStream(new FileOutputStream(FILE_NAME, true))) {
+                oos.writeObject(emp);
+            }
+
+            System.out.println("Employee added successfully!");
+        } catch (IOException e) {
+            System.out.println("Error saving employee: " + e.getMessage());
+        }
+    }
+
+    private static void displayEmployees() {
+        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(FILE_NAME))) {
+            while (true) {
+                Employee emp = (Employee) ois.readObject();
+                System.out.println(emp);
+            }
+        } catch (EOFException e) {
+            // End of file reached
+        } catch (IOException | ClassNotFoundException e) {
+            System.out.println("Error reading employee file: " + e.getMessage());
+        }
+    }
+
+    static class AppendableObjectOutputStream extends ObjectOutputStream {
+        public AppendableObjectOutputStream(OutputStream out) throws IOException {
+            super(out);
+        }
+
+        @Override
+        protected void writeStreamHeader() throws IOException {
+            reset();
+        }
+    }
+}
